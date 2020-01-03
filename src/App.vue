@@ -1,17 +1,45 @@
 <template>
-  <div id="app">
-    <img alt="Vue logo" src="./assets/logo.png">
-    <HelloWorld msg="Welcome to Your Vue.js App"/>
+  <div id="app" @click="cancelFocus">
+    <Typer 
+      @focus="typerFocus" 
+      :focus="isTyperFocus" 
+      :model="model"
+    />
+    <div class="btn-group">
+      <button @click="changeModel(1)">方式1</button>
+      <button @click="changeModel(2)">方式2</button>
+      <button @click="changeModel(3)">方式3</button>
+      <button @click="changeModel(4)">方式4</button>
+      <button @click="changeModel(5)">方式5</button>
+    </div>
   </div>
 </template>
 
 <script>
-import HelloWorld from './components/HelloWorld.vue'
+import Typer from './components/Typer.vue'
 
 export default {
   name: 'app',
   components: {
-    HelloWorld
+    Typer
+  },
+  data: () => {
+    return {
+      isTyperFocus: true,
+      model: 1
+    }
+  },
+  methods: {
+    typerFocus: function(){
+      this.isTyperFocus = true
+    },
+    cancelFocus: function(){
+      this.isTyperFocus = false
+    },
+    changeModel: function(model){
+      this.model = model
+      window.console.log(model)
+    }
   }
 }
 </script>
@@ -24,5 +52,9 @@ export default {
   text-align: center;
   color: #2c3e50;
   margin-top: 60px;
+  height: 500px;
+}
+.btn-group {
+  margin-top: 30px;
 }
 </style>
