@@ -2,22 +2,26 @@
   <div 
     class="type-input"
     @click.stop="handleFocus"
+    :style="inputStyle"
   >
-    <span 
-      v-for="(item, index) in outputShow" 
-      :key="index+Date.now()" 
-      class="char-item"
-      :class="modelClass | isAnimateInit(item.isInit)"
-      :style="charItemStyle"
-    >
-      {{ item.content  }}
-    </span>
-    <div class="focus" v-show="focus"></div>
+    <div class="content-container" ref="content">
+       <span 
+        v-for="(item, index) in outputShow" 
+        :key="index+Date.now()" 
+        class="char-item"
+        :class="modelClass | isAnimateInit(item.isInit)"
+        :style="charItemStyle"
+      >
+        {{ item.content  }}
+      </span>
+      <div class="focus" v-show="focus"></div>
+    </div>
     <input 
       type="text"
       ref="input"
       class="hide-input"
       @input="handleInput"
+      @paste="handlePasteInput"
       @keydown.delete="backInput"
       @compositionstart="lockInput"
       @compositionend="unlockInput"
@@ -41,38 +45,59 @@ export default {
     },
     focus: {
       type: Boolean,
-      default: true
+      default: false
+    },
+    copyModel: {
+      type: Boolean,
+      default: false
     }
   },
   data: () => {
     return {
       output: [],
       modelClass: "",
+      //输入队列
       charQueue: "",
       startInput: false,
+      //截断的位置
+      splicePosition: 0,
       defaultConfig: {
         color: "#000",
         sleep: 200,
-        charWidth: 15,
         inputWidth: 500,
       },
       charItemStyle: {
         width: "",
         color: ""
+      },
+      inputStyle: {
+        width: ""
       }
     }
   },
   methods: {
     //组建获取焦点
     handleFocus: function() {
+      if(!this.copyModel){
+        this.$refs.input.focus()
+      }
       this.$emit("focus")
-      this.$refs.input.focus()
     },
     //处理组件的输入
     handleInput: function(e) {
       if(e.data !== null){
         this.addCharQueue(e.data)
       }
+    },
+    handlePasteInput: function(e) {
+      let pastedText = ""
+      if (window.clipboardData && window.clipboardData.getData) { // IE
+        pastedText = window.clipboardData.getData('Text');
+      } else {
+        window.console.log(e)
+        pastedText = e.clipboardData.getData('Text');//e.clipboardData.getData('text/plain');
+      }
+      this.addCharQueue(pastedText)
     },
     //将输入放入输入队列
     addCharQueue: function(content) {
@@ -103,7 +128,6 @@ export default {
         // this.hasInit()
         let tempQueue = this.charQueue.split("")
         let firstChar = tempQueue.shift()
-        window.console.log(tempQueue, firstChar)
         this.charQueue = tempQueue.join("")
         this.output.push({
           content: firstChar,
@@ -118,6 +142,9 @@ export default {
     backInput: function(){
       if(this.output.length > 0 && !this.cpLock){
         this.output.pop()
+        if(this.splicePosition > 0){
+          this.splicePosition--
+        }
       }
     },
     //isInit完成
@@ -141,17 +168,20 @@ export default {
     }
   },
   computed: {
-    outputShow: function(){
-      const {charWidth, inputWidth} = this.defaultConfig
-      const maxItemNum = Math.floor(inputWidth / charWidth)
+    //真正显示的数据
+    outputShow: function() {
       const length = this.output.length
-      if(length > maxItemNum){
-        return this.output.slice(length - maxItemNum, length)
-        //return this.output
-      }
-      else {
-        return this.output
-      }
+      window.console.log(this.splicePosition, length, length - this.splicePosition, this.output.slice(this.splicePosition, length - this.splicePosition))
+      return this.output.slice(this.splicePosition, length)
+    },
+  },
+
+  watch: {
+    output: function(){
+       const {inputWidth} = this.defaultConfig
+        if(this.$refs.content && this.$refs.content.offsetWidth > inputWidth - 30){
+          this.splicePosition++
+        }
     }
   },
 
@@ -171,9 +201,9 @@ export default {
 
   mounted: function(){
     Object.assign(this.defaultConfig, this.config)
-    //确定字符样式
-    this.charItemStyle.width = this.defaultConfig.charWidth + "px"
+    //确定样式
     this.charItemStyle.color = this.defaultConfig.color
+    this.inputStyle.width = this.defaultConfig.inputWidth + "px"
   },
   updated: function() {
     //获得字符输入效果class
@@ -242,10 +272,12 @@ export default {
         transform: scale3d(0, 0, 0) rotate(0)
     }
   }
-  
+  .content-container {
+    display: inline-block;
+    white-space: nowrap
+  }
   .type-input {
     position: relative;
-    width: 500px;
     height: 30px;
     line-height: 30px;
     font-size: 15px;

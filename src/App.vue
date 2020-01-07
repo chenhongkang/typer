@@ -3,6 +3,7 @@
     <Typer 
       @focus="typerFocus" 
       :focus="isTyperFocus" 
+      :copyModel="copyModel" 
       :model="model"
     />
     <div class="btn-group">
@@ -11,6 +12,8 @@
       <button @click="changeModel(3)">方式3</button>
       <button @click="changeModel(4)">方式4</button>
       <button @click="changeModel(5)">方式5</button>
+      <button @click="changeCopyModel(false)">普通模式</button>
+      <button @click="changeCopyModel(true)">复制模式</button>
     </div>
   </div>
 </template>
@@ -26,7 +29,8 @@ export default {
   data: () => {
     return {
       isTyperFocus: true,
-      model: 1
+      model: 1,
+      copyModel: false
     }
   },
   methods: {
@@ -39,6 +43,9 @@ export default {
     changeModel: function(model){
       this.model = model
       window.console.log(model)
+    },
+    changeCopyModel: function(copySwitch){
+      this.copyModel = copySwitch
     }
   }
 }
