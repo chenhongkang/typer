@@ -4,6 +4,7 @@
       @focus="typerFocus" 
       :focus="isTyperFocus" 
       :copyModel="copyModel" 
+      :config="{inputWidth}"
       :model="model"
     />
     <div class="btn-group">
@@ -14,6 +15,8 @@
       <button @click="changeModel(5)">方式5</button>
       <button @click="changeCopyModel(false)">普通模式</button>
       <button @click="changeCopyModel(true)">复制模式</button>
+      <label for="inputWidth">长度</label>
+      <input name="inputWidth" type="text" v-model="inputWidth">
     </div>
   </div>
 </template>
@@ -30,7 +33,9 @@ export default {
     return {
       isTyperFocus: true,
       model: 1,
-      copyModel: false
+      copyModel: false,
+      inputWidth: 500,
+      sleep: 200
     }
   },
   methods: {
@@ -42,7 +47,6 @@ export default {
     },
     changeModel: function(model){
       this.model = model
-      window.console.log(model)
     },
     changeCopyModel: function(copySwitch){
       this.copyModel = copySwitch

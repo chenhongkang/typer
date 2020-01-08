@@ -115,14 +115,6 @@ export default {
     //渐入式输入
     handleInputGradual: async function() {
       const {sleep} = this.defaultConfig
-      // for(let item of this.charQueue){
-      //   await this.sleep(sleep)
-      //   this.output.push({
-      //     content: item,
-      //     isInit: false
-      //   })
-      //   this.charQueue = this.charQueue.split().shift()
-      // }
       while(this.charQueue.length > 0){
         await this.sleep(sleep)
         // this.hasInit()
@@ -140,6 +132,7 @@ export default {
     },
     //删除输入
     backInput: function(){
+      window.console.log(123)
       if(this.output.length > 0 && !this.cpLock){
         this.output.pop()
         if(this.splicePosition > 0){
@@ -153,6 +146,17 @@ export default {
       let length = this.output.length
       if(length){
         this.output[length - 1].isInit = true
+      }
+    },
+    //处理打字的缩进问题
+    handleSplice: function(){
+      window.console.log("handleSplice")
+      const {inputWidth} = this.defaultConfig
+      if(this.$refs.content && this.$refs.content.offsetWidth > inputWidth - 30){
+        this.splicePosition++
+        this.$nextTick(() => {
+          this.handleSplice()
+        })
       }
     },
     //等待函数
@@ -178,10 +182,7 @@ export default {
 
   watch: {
     output: function(){
-       const {inputWidth} = this.defaultConfig
-        if(this.$refs.content && this.$refs.content.offsetWidth > inputWidth - 30){
-          this.splicePosition++
-        }
+      this.handleSplice()
     }
   },
 
@@ -206,6 +207,11 @@ export default {
     this.inputStyle.width = this.defaultConfig.inputWidth + "px"
   },
   updated: function() {
+    Object.assign(this.defaultConfig, this.config)
+    window.console.log(this.defaultConfig)
+    //确定样式
+    this.charItemStyle.color = this.defaultConfig.color
+    this.inputStyle.width = this.defaultConfig.inputWidth + "px"
     //获得字符输入效果class
     const allModelClass = ["gradual-item", "flyin-item", "scale-item", "shake-item", "scale-rotate-item"];
     this.modelClass = allModelClass[this.model - 1]
